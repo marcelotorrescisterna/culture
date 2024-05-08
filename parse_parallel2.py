@@ -72,13 +72,16 @@ def process_largefile(
             print("ENTRO AQUI LA WEAAAAAAAAAAAAAAAAAAAAAAAAA")
             with Pool(global_options.N_CORES) as pool:
                 print("ENTRO AL FOOOOOOOOOOOOOOOOOR")
-                for output_line, output_line_id in pool.starmap(
-                    function_name, zip(next_n_lines, next_n_line_ids)
-                ):
-                    print("SALIO AL FOOOOOOOOOOOOOOOOOR")
-                    print(output_line_id)
-                    output_lines.append(output_line)
-                    output_line_ids.append(output_line_id)
+                try:
+                    for output_line, output_line_id in pool.starmap(
+                        function_name, zip(next_n_lines, next_n_line_ids)
+                    ):
+                        print("SALIO AL FOOOOOOOOOOOOOOOOOR")
+                        print(output_line_id)
+                        output_lines.append(output_line)
+                        output_line_ids.append(output_line_id)
+                except Exception as e:
+                    print(e)
                     
             output_lines = "\n".join(output_lines) + "\n"
             output_line_ids = "\n".join(output_line_ids) + "\n"

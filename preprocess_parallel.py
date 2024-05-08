@@ -35,6 +35,7 @@ def process_document(doc, doc_id=None):
     sentences_processed = []
     doc_sent_ids = []
     print("ESTA FUNCIONANDO ESTA CAGADAAAAAAAAAAAAAAAAA")
+    print(f"DOC ID : {doc_id}")
     for i, sentence in enumerate(doc_ann.sentence):
         sentences_processed.append(process_sentence(sentence))
         doc_sent_ids.append(str(doc_id) + "_" + str(i))

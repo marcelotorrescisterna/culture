@@ -91,6 +91,7 @@ def process_largefile(
             for output_line, output_line_id in map(
                 function_name, next_n_lines, next_n_line_ids
             ):
+                print(output_line_id)
                 output_lines.append(output_line)
                 output_line_ids.append(output_line_id)
             output_lines = "\n".join(output_lines) + "\n"

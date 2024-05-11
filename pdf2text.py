@@ -1,5 +1,5 @@
 """
-Build txt files from pdf fiñes
+Build txt files from pdf files
 
 @Marcelo Torres Cisterna
 @Datellus
@@ -9,12 +9,18 @@ Build txt files from pdf fiñes
 import pandas as pd
 import numpy as np
 import re
+import argparse
 from PyPDF2 import PdfReader
 import os
 from textcleaningutils import *
 import shutil as sh
 
-INPUT_FOLDER = "data/pdf_files"
+parser = argparse.ArgumentParser(description="PDF 2 Text")
+parser.add_argument("INPUT_FOLDER_ARG" , help = "path to input pdf")
+
+args = parser.parse_args()
+
+INPUT_FOLDER = args.INPUT_FOLDER_ARG
 OUTPUT_FOLDER = "data/input"
 BAD_PDF_FOLDER = "data/bad_pdf_files"
 docs = os.listdir(INPUT_FOLDER)

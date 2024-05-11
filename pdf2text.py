@@ -368,6 +368,12 @@ if __name__ == "__main__":
                 "file" : f"{doc}"
             }
             id2doc.append(d)
+            if m in [50000 , 100000 , 150000 , 200000 , 250000 , 300000 , 350000]:
+                print("ENTRO AQUI?")
+                with open(f'{OUTPUT_FOLDER}/documents_{m+1}.txt', 'w') as f:
+                    f.write(corpus)
+                with open(f'{OUTPUT_FOLDER}/document_ids_{m+1}.txt', 'w') as f:
+                    f.write(ids)   
         except Exception as e:
             print(e)
             print(f"ERROR PROCESSING FILE : {doc}")

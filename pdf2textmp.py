@@ -9,9 +9,9 @@ import shutil as sh
 from multiprocessing import Pool, Manager
 import time
 
-def process_document(doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_list, ids_list, id2doc_list):
+def process_document(index, total, doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_list, ids_list, id2doc_list):
     try:
-        print(f"PROCESSING FILE : {doc}")
+        print(f"PROCESSING FILE : {doc} ({index + 1}/{total})")
         reader = PdfReader(f"{INPUT_FOLDER}/{doc}")
         number_of_pages = len(reader.pages)
         doc_name = doc.replace("pdf", "txt")
@@ -127,7 +127,7 @@ def process_document(doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_li
                 quality = 4
                 table_contents = [3, 3, 3]
 
-        if (quality in [1, 4]):
+        if quality in [1, 4]:
             participants = str()
             for i in range(participants_num, presentation_num):
                 page = reader.pages[participants_num]
@@ -171,7 +171,7 @@ def process_document(doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_li
             participants = [x for x in participants if x != "CONFERENCE CALL PARTICIPANTS"]
             participants = participants + ["[Operator Instructions]"] + ["Operator"] + ["(Operator Instructions)"]
 
-        if (quality in [1, 2, 4]):
+        if quality in [1, 2, 4]:
             page = reader.pages[qa_num]
             maintext = page.extract_text()
             maintext = maintext.replace('[Operator Instructions]', "").strip()
@@ -212,78 +212,86 @@ def process_document(doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_li
             page = reader.pages[qa_num]
             maintext = page.extract_text()
             maintext = maintext.replace('[Operator Instructions]', "").strip()
-            maintext = maintext.split("Question and Answer")[1]
             maintext = participantsRemover(maintext, participants)
-            maintext = [x.strip() for x in maintext]
+            maintext = firstPageCleaner(maintext)
             maintext = '   '.join(maintext)
-            for i in range(qa_num + 1, number_of_pages):
+            for i in range(qa_num + 1, number_of_pages - 1):
                 page = reader.pages[i]
-                currenttext = page.extract_text().strip()
+                currenttext = page.extract_text()
                 currenttext = currenttext.replace('[Operator Instructions]', "").strip()
-                if "Disclaimer" not in currenttext:
-                    currenttext = participantsRemover(currenttext, participants)
-                    currenttext = [x.strip() for x in currenttext]
-                    currenttext = '   '.join(currenttext).strip()
-                    if len(maintext) != 0:
-                        maintext = maintext + "   " + currenttext
-                    else:
-                        maintext = maintext + currenttext
+                currenttext = currenttext.split("All Rights reserved.")[1]
+                currenttext = currenttext.split("\n")
+                currenttext = [x for x in currenttext if len(x) != 0]
+                if i == (number_of_pages - 2):
+                    last_strong = 0
+                    for h, c in enumerate(currenttext):
+                        if "<strong>" in c[:9]:
+                            last_strong = h
+                    if last_strong != 0:
+                        currenttext = currenttext[:last_strong]
+                for p in participants:
+                    try:
+                        pattern = re.search(p, currenttext[0]).group()
+                        currenttext = currenttext[1:]
+                    except:
+                        currenttext = currenttext
+                currenttext = participantsRemover(currenttext, participants)
+                try:
+                    currenttext = numCleanerold(currenttext, i)
+                except:
+                    currenttext = currenttext
+                currenttext = '   '.join(currenttext)
+                if len(maintext) != 0:
+                    maintext = maintext + "   " + currenttext
                 else:
-                    currenttext = currenttext.split("Disclaimer")[0]
-                    currenttext = participantsRemover(currenttext, participants)
-                    currenttext = [x.strip() for x in currenttext]
-                    currenttext = '   '.join(currenttext).strip()
-                    if len(maintext) != 0:
-                        maintext = maintext + "   " + currenttext
-                    else:
-                        maintext = maintext + currenttext
-                    break
+                    maintext = maintext + currenttext
         elif quality == 6:
-            page = reader.pages[0]
-            currenttext = page.extract_text().strip()
-            disclaimer = currenttext.split("affiliated companies")[0] + "affiliated companies."
             page = reader.pages[qa_num]
             maintext = page.extract_text()
-            maintext = maintext.replace('(Operator Instructions)', "").strip()
-            maintext = maintext.split("QUESTIONS AND ANSWERS")[1]
+            maintext = maintext.replace('[Operator Instructions]', "").strip()
             maintext = participantsRemover(maintext, participants)
-            maintext = [x.strip() for x in maintext]
+            maintext = firstPageCleaner(maintext)
             maintext = '   '.join(maintext)
-            for i in range(qa_num + 1, number_of_pages):
+            for i in range(qa_num + 1, number_of_pages - 1):
                 page = reader.pages[i]
-                currenttext = page.extract_text().strip()
-                currenttext = currenttext.replace('(Operator Instructions)', "").strip()
-                currenttext = currenttext.split(f"{disclaimer}{i + 1}")[1].strip()
-                if "DISCLAIMER" not in currenttext:
-                    currenttext = participantsRemover(currenttext, participants)
-                    currenttext = [x.strip() for x in currenttext]
-                    currenttext = '   '.join(currenttext).strip()
-                    if len(maintext) != 0:
-                        maintext = maintext + "   " + currenttext
-                    else:
-                        maintext = maintext + currenttext
+                currenttext = page.extract_text()
+                currenttext = currenttext.replace('[Operator Instructions]', "").strip()
+                currenttext = currenttext.split("All Rights reserved.")[1]
+                currenttext = currenttext.split("\n")
+                currenttext = [x for x in currenttext if len(x) != 0]
+                if i == (number_of_pages - 2):
+                    last_strong = 0
+                    for h, c in enumerate(currenttext):
+                        if "<strong>" in c[:9]:
+                            last_strong = h
+                    if last_strong != 0:
+                        currenttext = currenttext[:last_strong]
+                for p in participants:
+                    try:
+                        pattern = re.search(p, currenttext[0]).group()
+                        currenttext = currenttext[1:]
+                    except:
+                        currenttext = currenttext
+                currenttext = participantsRemover(currenttext, participants)
+                try:
+                    currenttext = numCleanerold(currenttext, i)
+                except:
+                    currenttext = currenttext
+                currenttext = '   '.join(currenttext)
+                if len(maintext) != 0:
+                    maintext = maintext + "   " + currenttext
                 else:
-                    currenttext = currenttext.split("DISCLAIMER")[0]
-                    currenttext = participantsRemover(currenttext, participants)
-                    currenttext = [x.strip() for x in currenttext]
-                    currenttext = '   '.join(currenttext).strip()
-                    if len(maintext) != 0:
-                        maintext = maintext + "   " + currenttext
-                    else:
-                        maintext = maintext + currenttext
-                    break
-        idnum = f"{doc}.F"
-        with open(f'{OUTPUT_FOLDER}/txtfiles/{doc_name}', 'w') as f:
+                    maintext = maintext + currenttext
+
+        with open(f"{OUTPUT_FOLDER}/txtfiles/{doc_name}", "w") as f:
             f.write(maintext)
-        corpus_list.append(maintext + "\r\n")
-        ids_list.append(idnum + "\r\n")
-        id2doc_list.append({"idnum": idnum, "file": doc})
+        corpus_list.append(maintext)
+        ids_list.append(doc)
+        id2doc_list.append((doc, quality))
+
     except Exception as e:
-        print(e)
-        print(f"ERROR PROCESSING FILE : {doc}")
-        SOURCE = f"{INPUT_FOLDER}/{doc}"
-        DEST = f"{BAD_PDF_FOLDER}/{doc}"
-        sh.move(SOURCE, DEST)
+        print(f"Error processing {doc}: {e}")
+        sh.move(f"{INPUT_FOLDER}/{doc}", BAD_PDF_FOLDER)
 
 def main():
     parser = argparse.ArgumentParser(description="PDF 2 Text")
@@ -299,15 +307,18 @@ def main():
         os.makedirs(OUTPUT_FOLDER + "/txtfiles/")
     if not os.path.exists(BAD_PDF_FOLDER):
         os.makedirs(BAD_PDF_FOLDER)
-        
-    start_time = time.time()
+
+    start_time = time.time()  # Record start time
 
     with Manager() as manager:
         corpus_list = manager.list()
         ids_list = manager.list()
         id2doc_list = manager.list()
         pool = Pool()
-        results = [pool.apply_async(process_document, args=(doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_list, ids_list, id2doc_list)) for doc in docs]
+        results = [
+            pool.apply_async(process_document, args=(index, len(docs), doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_list, ids_list, id2doc_list))
+            for index, doc in enumerate(docs)
+        ]
         for r in results:
             r.wait()
         pool.close()
@@ -321,6 +332,7 @@ def main():
             f.write(corpus)
         with open(f'{OUTPUT_FOLDER}/document_ids.txt', 'w') as f:
             f.write(ids)
+
     end_time = time.time()  # Record end time
     elapsed_time = end_time - start_time
     print(f"Total execution time: {elapsed_time:.2f} seconds")

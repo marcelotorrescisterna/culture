@@ -8,10 +8,15 @@ from textcleaningutils import *
 import shutil as sh
 from multiprocessing import Pool, Manager
 import time
+import logging
+
+# Configure logging
+logging.basicConfig(filename='processing_log.log', level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 def process_document(index, total, doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_list, ids_list, id2doc_list):
     try:
-        print(f"PROCESSING FILE : {doc} ({index + 1}/{total})")
+        logging.info(f"PROCESSING FILE : {doc} ({index + 1}/{total})")
         reader = PdfReader(f"{INPUT_FOLDER}/{doc}")
         number_of_pages = len(reader.pages)
         doc_name = doc.replace("pdf", "txt")
@@ -290,7 +295,7 @@ def process_document(index, total, doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOL
         id2doc_list.append((doc, quality))
 
     except Exception as e:
-        print(f"Error processing {doc}: {e}")
+        logging.error(f"Error processing {doc}: {e}")
         sh.move(f"{INPUT_FOLDER}/{doc}", BAD_PDF_FOLDER)
 
 def main():
@@ -314,7 +319,8 @@ def main():
         corpus_list = manager.list()
         ids_list = manager.list()
         id2doc_list = manager.list()
-        pool = Pool()
+        num_cores = 4  # specify the number of cores you want to use
+        pool = Pool(processes=num_cores)
         results = [
             pool.apply_async(process_document, args=(index, len(docs), doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_list, ids_list, id2doc_list))
             for index, doc in enumerate(docs)
@@ -335,7 +341,7 @@ def main():
 
     end_time = time.time()  # Record end time
     elapsed_time = end_time - start_time
-    print(f"Total execution time: {elapsed_time:.2f} seconds")
+    logging.info(f"Total execution time: {elapsed_time:.2f} seconds")
 
 if __name__ == "__main__":
     main()

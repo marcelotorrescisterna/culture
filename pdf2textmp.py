@@ -314,8 +314,7 @@ def main():
         corpus_list = manager.list()
         ids_list = manager.list()
         id2doc_list = manager.list()
-        num_cores = 4  # specify the number of cores you want to use
-        pool = Pool(processes=num_cores)
+        pool = Pool()
         results = [
             pool.apply_async(process_document, args=(index, len(docs), doc, INPUT_FOLDER, OUTPUT_FOLDER, BAD_PDF_FOLDER, corpus_list, ids_list, id2doc_list))
             for index, doc in enumerate(docs)

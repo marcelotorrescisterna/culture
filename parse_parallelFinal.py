@@ -69,7 +69,7 @@ def process_largefile(
             next_n_line_ids = list(filter(None.__ne__, next_n_line_ids))
             output_lines = []
             output_line_ids = []
-            # print("ENTRO AQUI LA WEAAAAAAAAAAAAAAAAAAAAAAAAA")
+            print(f"LINES : {next_n_line_ids}")
             with Pool(global_options.N_CORES) as pool:
                 # print("ENTRO AL FOOOOOOOOOOOOOOOOOR")
                 try:

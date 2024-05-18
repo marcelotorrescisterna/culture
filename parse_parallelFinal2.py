@@ -80,6 +80,8 @@ def process_largefile(
                         print(output_line_id)
                         output_lines.append(output_line)
                         output_line_ids.append(output_line_id)
+                        output_lines = "\n".join(output_lines) + "\n"
+                        output_line_ids = "\n".join(output_line_ids) + "\n"
                         with open(f"individual_parsing/{line_i}_parsed_lines.txt", "a", newline="\n") as f_out_temp:
                             f_out_temp.write(output_lines)
                         with open(f"individual_parsing/{line_i}_parsed_ids.txt", "a", newline="\n") as f_out_temp:

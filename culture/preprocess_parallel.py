@@ -39,6 +39,12 @@ def process_document(doc, doc_id=None):
     for i, sentence in enumerate(doc_ann.sentence):
         sentences_processed.append(process_sentence(sentence))
         doc_sent_ids.append(str(doc_id) + "_" + str(i))
+    s_doc = "\n".join(sentences_processed)
+    s_doc_id = "\n".join(doc_sent_ids)
+    with open(f"../individual_parsing/{doc_id}_parsed_lines.txt", "a") as f_out_temp_ind:
+        f_out_temp_ind.write(s_doc)
+    with open(f"../individual_parsing/{doc_id}_parsed_ids.txt", "a") as f_out_temp_ind:
+        f_out_temp_ind.write(s_doc_id)
     return "\n".join(sentences_processed), "\n".join(doc_sent_ids)
 
 
